@@ -11,6 +11,8 @@
     "src"
   ],
   "scripts": {
+    "test": "ava \"test/**/*.test.js\"",
+    "test:snapshot": "ava --update-snapshots \"test/**/*.test.js\""
   },
   "keywords": [
     "unified",
