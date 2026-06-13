@@ -1,7 +1,8 @@
 import type { Root } from 'hast';
-import type { Plugin } from 'unified';
 
-export type RehypeMergeCells = Plugin<[], Root>;
+type Transformer = (tree: Root) => undefined;
+
+export type RehypeMergeCells = () => Transformer;
 
 export const rehypeMergeCells: RehypeMergeCells;
 
