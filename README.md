@@ -1,12 +1,10 @@
 # rehype-merge-cells
 
-A rehype plugin to merge adjacent cells with the same content.
+A [rehype](https://github.com/rehypejs/rehype) plugin that merges adjacent table cells with identical content.
 
-It will first merge cells with the same content in every _column_, and then merge cells with the same content in every _row_. If cells were merged in the first step, row merging only happens when the cells also have the same height. This is by design because usually a column is a field and a row is a record — it is more reasonable for multiple records to have the same value in a field than for multiple fields in a record to have the same value.
+It operates on HAST nodes in a [unified](https://github.com/unifiedjs/unified) / rehype pipeline. It works with standard GFM Markdown tables and needs no custom table syntax or markers. Vertically adjacent cells are merged using `rowspan`, horizontally adjacent cells using `colspan`.
 
-It works on HAST nodes in a unified / rehype pipeline.
-
-This package uses the same merging algorithm as `markdown-it-merge-cells`.
+This package implements the same merging algorithm as `markdown-it-merge-cells`.
 
 ## Features
 
@@ -15,9 +13,9 @@ This package uses the same merging algorithm as `markdown-it-merge-cells`.
 - Merges vertically adjacent cells with the same content using `rowspan`.
 - Merges horizontally adjacent cells with the same content using `colspan`.
 - Runs vertical merging before horizontal merging.
-- Prevents invalid horizontal merges by requiring cells to have the same rowspan height.
-- Does not merge the table header with the table body.
-- Supports matching inline content structures, such as emphasis and links.
+- Prevents invalid horizontal merges by requiring the matched cells to share the same rowspan height.
+- Never merges header cells with body cells.
+- Recognizes matching inline structures such as emphasis and links.
 
 ## Install
 
@@ -125,28 +123,28 @@ Output:
 
 ### `rehypeMergeCells()`
 
-Returns a rehype transformer that visits all `table` elements and mutates their cell nodes in place.
+Returns a rehype transformer that visits every `table` element and merges its cells in place.
 
-```js
-import { rehypeMergeCells } from 'rehype-merge-cells';
-```
-
-The package also provides a default export:
+The plugin is available as both a default and a named export:
 
 ```js
 import rehypeMergeCells from 'rehype-merge-cells';
+// or
+import { rehypeMergeCells } from 'rehype-merge-cells';
 ```
 
 ## Merging rules
 
-Given a table matrix, the plugin applies two passes:
+Given a table matrix, the plugin applies two passes, in order:
 
-1. **Vertical pass**: cells in the same column with identical content are merged upward and assigned `rowspan`.
-2. **Horizontal pass**: cells in the same row with identical content are merged leftward and assigned `colspan`.
+1. **Vertical pass** — cells in the same column with identical content are merged upward and assigned `rowspan`.
+2. **Horizontal pass** — cells in the same row with identical content are merged leftward and assigned `colspan`.
 
-Horizontal merging only happens when the cells have the same rowspan height. This keeps the resulting HTML table layout valid.
+The horizontal pass only proceeds when the candidate cells also share the same rowspan height, which keeps the resulting HTML table layout valid.
 
-Header cells are not merged vertically with body cells, but cells inside the same header row can still be merged horizontally.
+Header cells are never merged vertically with body cells, although cells within the same header row can still be merged horizontally.
+
+> **Why vertical first?** A column usually represents a field and a row a record. It is far more common for several records to repeat the same value in one field than for one record to repeat the same value across several fields — so vertical merging is allowed to run freely, while horizontal merging is constrained to cells that already line up in height.
 
 ## Development
 
